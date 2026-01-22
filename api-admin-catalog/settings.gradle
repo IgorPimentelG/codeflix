@@ -1,0 +1,4 @@
+rootProject.name = 'api-admin-catalog'
+include 'domain'
+include 'application'
+include 'infrastructure'
