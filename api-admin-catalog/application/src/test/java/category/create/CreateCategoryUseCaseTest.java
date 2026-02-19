@@ -36,7 +36,7 @@ public class CreateCategoryUseCaseTest {
 		when(categoryGateway.create(Mockito.any())).thenAnswer(returnsFirstArg());
 
 		final var command = CreateCategoryCommand.with(expectedName, expectedDescription, expectedIsActive);
-		final var output = useCase.execute(command);
+		final var output = useCase.execute(command).get();
 
 		assertNotNull(output);
 		assertNotNull(output.id());
@@ -60,10 +60,10 @@ public class CreateCategoryUseCaseTest {
 		final var expectedErrorCount = 1;
 
 		final var command = CreateCategoryCommand.with(expectedName, expectedDescription, expectedIsActive);
-		final var exception = assertThrows(DomainException.class, () -> useCase.execute(command));
+		final var notification = useCase.execute(command).getLeft();
 
-		assertEquals(expectedErrorMessage, exception.getMessage());
-		assertEquals(expectedErrorCount, exception.getErrors().size());
+		assertEquals(expectedErrorMessage, notification.firstError().message());
+		assertEquals(expectedErrorCount, notification.getErrors().size());
 
 		verify(categoryGateway, times(0)).create(any());
 	}
@@ -77,7 +77,7 @@ public class CreateCategoryUseCaseTest {
 		when(categoryGateway.create(Mockito.any())).thenAnswer(returnsFirstArg());
 
 		final var command = CreateCategoryCommand.with(expectedName, expectedDescription, expectedIsActive);
-		final var output = useCase.execute(command);
+		final var output = useCase.execute(command).get();
 
 		assertNotNull(output);
 		assertNotNull(output.id());
@@ -97,14 +97,16 @@ public class CreateCategoryUseCaseTest {
 		final var expectedName = "Filmes";
 		final var expectedDescription = "A categoria mais assistida";
 		final var expectedIsActive = false;
+		final var expectedErrorCount = 1;
 		final var expectedErrorMessage = "Gateway error";
 
 		when(categoryGateway.create(any())).thenThrow(new IllegalStateException(expectedErrorMessage));
 
 		final var command = CreateCategoryCommand.with(expectedName, expectedDescription, expectedIsActive);
-		final var exception = assertThrows(IllegalStateException.class, () -> useCase.execute(command));
+		final var notification = useCase.execute(command).getLeft();
 
-		assertEquals(expectedErrorMessage, exception.getMessage());
+		assertEquals(expectedErrorMessage, notification.firstError().message());
+		assertEquals(expectedErrorCount, notification.getErrors().size());
 		verify(categoryGateway, times(1)).create(any());
 	}
 }
